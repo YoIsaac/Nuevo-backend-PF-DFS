@@ -212,7 +212,7 @@ module.exports = app;
 // SERVER (solo si no es test)
 // ======================
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 4000;
 
   app.listen(PORT, () => {
     console.log(`✅ Servidor corriendo en puerto ${PORT}`);
