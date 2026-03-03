@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - Tareas</title>
+  <meta charset="UTF-8" />
+  <title>Task Manager PRO</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <h1>📋 Mis Tareas</h1>
+  <h1>📋 Gestor de Tareas</h1>
 
-  <!-- Botón cerrar sesión -->
-  <button id="logout">Cerrar sesión</button>
+  <button onclick="logout()">Cerrar sesión</button>
 
   <hr>
 
-  <!-- Formulario nueva tarea -->
-  <h2>Nueva tarea</h2>
+  <h2>➕ Nueva Tarea</h2>
   <form id="taskForm">
     <input type="text" id="title" placeholder="Título" required />
     <input type="text" id="description" placeholder="Descripción" />
+    <select id="priority">
+      <option value="low">Baja</option>
+      <option value="medium" selected>Media</option>
+      <option value="high">Alta</option>
+    </select>
     <button type="submit">Agregar</button>
   </form>
 
   <hr>
 
-  <!-- Lista de tareas -->
-  <ul id="taskList"></ul>
+  <h2>📌 Mis Tareas</h2>
+  <div id="tasks"></div>
 
   <script src="dashboard.js"></script>
 </body>

@@ -1,110 +1,101 @@
-// ==========================================
-// dashboard.js
-// Manejo de tareas con JWT (CRUD completo)
-// ==========================================
+const API = "http://localhost:4000";
+const token = localStorage.getItem("token");
 
-// 📌 URL base del backend
-const API_URL = 'http://localhost:3000/api/tasks';
-
-// 📌 Obtenemos el token guardado al hacer login
-const token = localStorage.getItem('token');
-
-// ❌ Si no hay token, regresamos al login
 if (!token) {
-  alert('No autorizado, inicia sesión');
-  window.location.href = 'index.html';
+  window.location.href = "index.html";
 }
 
-// 📌 Referencias al DOM
-const taskList = document.getElementById('taskList');
-const taskForm = document.getElementById('taskForm');
-const logoutBtn = document.getElementById('logout');
+async function cargarTareas() {
+  const res = await fetch(`${API}/tasks`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
 
-// ==========================================
-// 🔹 CERRAR SESIÓN
-// ==========================================
-logoutBtn.addEventListener('click', () => {
-  localStorage.removeItem('token');
-  window.location.href = 'index.html';
-});
+  const data = await res.json();
+  const contenedor = document.getElementById("tasks");
+  contenedor.innerHTML = "";
 
-// ==========================================
-// 🔹 OBTENER TODAS LAS TAREAS (READ)
-// ==========================================
-const getTasks = async () => {
-  try {
-    const res = await fetch(API_URL, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+  data.data.forEach(task => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-    const tasks = await res.json();
-    taskList.innerHTML = '';
+    card.innerHTML = `
+      <h3>${task.title}</h3>
+      <p>${task.description || "Sin descripción"}</p>
+      <p><strong>Estado:</strong> ${task.status}</p>
+      <p><strong>Prioridad:</strong> ${task.priority}</p>
+      <button onclick="cambiarEstado(${task.id}, '${task.status}')">
+        Cambiar Estado
+      </button>
+      <button onclick="eliminarTarea(${task.id})">
+        Eliminar
+      </button>
+    `;
 
-    tasks.forEach(task => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <strong>${task.title}</strong> - ${task.description || ''}
-        <button onclick="deleteTask('${task._id}')">❌</button>
-      `;
-      taskList.appendChild(li);
-    });
+    contenedor.appendChild(card);
+  });
+}
 
-  } catch (error) {
-    console.error('Error al obtener tareas', error);
-  }
-};
-
-// ==========================================
-// 🔹 CREAR TAREA (CREATE)
-// ==========================================
-taskForm.addEventListener('submit', async (e) => {
+document.getElementById("taskForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const title = document.getElementById('title').value;
-  const description = document.getElementById('description').value;
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const priority = document.getElementById("priority").value;
 
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ title, description })
-    });
+  await fetch(`${API}/tasks`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      title,
+      description,
+      priority
+    })
+  });
 
-    taskForm.reset();
-    getTasks();
-
-  } catch (error) {
-    console.error('Error al crear tarea', error);
-  }
+  document.getElementById("taskForm").reset();
+  cargarTareas();
 });
 
-// ==========================================
-// 🔹 ELIMINAR TAREA (DELETE)
-// ==========================================
-const deleteTask = async (id) => {
-  if (!confirm('¿Eliminar esta tarea?')) return;
+async function eliminarTarea(id) {
+  await fetch(`${API}/tasks/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
 
-  try {
-    await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+  cargarTareas();
+}
 
-    getTasks();
+async function cambiarEstado(id, estadoActual) {
+  const nuevoEstado = estadoActual === "pending" ? "completed" : "pending";
 
-  } catch (error) {
-    console.error('Error al eliminar tarea', error);
-  }
-};
+  await fetch(`${API}/tasks/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      title: "Sin cambios",
+      description: "",
+      status: nuevoEstado,
+      priority: "medium",
+      due_date: null
+    })
+  });
 
-// ==========================================
-// 🚀 CARGAR TAREAS AL ENTRAR
-// ==========================================
-getTasks();
+  cargarTareas();
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+}
+
+cargarTareas();
